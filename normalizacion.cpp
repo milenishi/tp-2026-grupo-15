@@ -52,7 +52,20 @@ while (fread(&c, sizeof(ComandaHistorica), 1, f) == 1) {
         }
         
     }
+	fclose (f);
 	
+	// creamos un archivo para ir guardando lo q cargamos en lista
+	FILE* fmozos = fopen("mozos.dat", "wb");
+    if (fmozos == NULL) {
+        cout << "No se pudo crear el archivo" << endl;
+        return 0;
+    }
+    
+    fwrite(lista, sizeof(Mozo), cantidadMozos, fmozos);
+
+    fclose(fmozos);
+    
+    cout << "Archivo mozos.dat generado exitosamente con " << cantidadMozos << " mozos." << endl;
 	return 0;
 }
 
