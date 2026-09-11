@@ -12,7 +12,6 @@ int codigoProducto; int cantidad; float comision;
 struct Mozo { 
  int idMozo; 
  char nombre[50];
- char password[20]; 
  float totalComision; 
  };
 
