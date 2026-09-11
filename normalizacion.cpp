@@ -1,10 +1,6 @@
 #include <iostream>
 using namespace std;
-
-
-
 int main (){
-	
-	cout <<"hola";
+	cout <<"nose";
 	return 0;
 }
