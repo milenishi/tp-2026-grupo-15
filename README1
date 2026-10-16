@@ -1,4 +1,4 @@
-Integrantes del Grupo 5:
+Integrantes del Grupo 15:
 Nombre               |      Github        |    Legajo
 Esain Thiago         | yorekst            |  233.850-6
 Manen Nayla          | nmanen             |  235.108-0
@@ -38,7 +38,9 @@ Ademas se le va a pedir una clave y lo va a comprobar con su clave encriptada. L
 que se allan cargado todo lo que se indica se llama a un par de funciones que se encargan de actualizar el estado del stock y de una planilla del dia con las
 ventas de cada mozo.
 
-Cierre: Para la venta se debe 
+Cierre: El programa junta las ventas de la semana calculando primero los nombres de los siete archivos diarios a partir de los datos ingresados. Luego, lee todas 
+esas comandas y las pone en un arreglo para ordenarlas mediante el método de burbuja, priorizando el id del mozo para agruparlas por empleado. Finalmente, descarta
+los datos temporales de ordenamiento y guarda los registros ya organizados en el nuevo archivo comandas_semana_sX-mm.dat
 
 Resumen: Para resolver el resumen, primero se pide al usuario que le pida que archivo semanal es el que quiere volcar para que muestre el resumen semanal. 
 una vez ingresado busca el archivo, lo abre y al entrar a un ciclo extrae todos los datos de la semana y los vuelca mostrando por mozo cuantos productos vendio 
