@@ -12,7 +12,7 @@ El orden en el que hay que compilar los programas son:
 3: Cierre: Crea Planilla semanal por mozo. Encargado: Feliu Felipe
 4: Resumen: Muestra cuantos productos vendio cada mozo en la semana y las comisiones que recibe.
 
-
+Cosas a saber para la ejecucion:
 Para el apartado de ventas los id de los es del 1 al 5 en el siguiente orden:
 1 — Bruno Diaz
 2 — Carla Lopez
@@ -21,3 +21,13 @@ Para el apartado de ventas los id de los es del 1 al 5 en el siguiente orden:
 5 — Sofia Ramirez
 
 Ademas las password de cada uno es equivalente a su id correspondiente.
+
+Explicacion de como se realizaron los programas:
+Normalizacion: Para resolver la normalización, primero cargamos el archivo histórico en memoria y lo ordenamos mediante el método de burbuja por fecha y, 
+en caso de ser igual, por mozo. Luego recorrimos el arreglo comparando la fecha de cada venta con una variable auxiliar fechaActual; cada vez que detectamos 
+un cambio de fecha, cerramos el archivo en uso y generamos uno nuevo para separar las planillas diarias. Durante este recorrido, a los mozos les asignamos un 
+id numérico y encriptamos su clave inicial sumando k=5 a cada carácter de su id. Finalmente, para actualizar el inventario sin tener que rehacer el archivo 
+desde cero, abrimos inventario.dat en modo rb+ y utilizamos fseek con un retroceso de -(long)sizeof(Producto) para retroceder el cursor y sobrescribir 
+directamente el stock de cada producto vendido.
+
+
