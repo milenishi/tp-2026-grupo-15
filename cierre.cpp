@@ -25,17 +25,31 @@ struct ComandaSemana {
     Comanda comanda;
 };
 
+bool esBisiesto(int anio) {
+    return anio % 4 == 0 && (anio % 100 != 0 || anio % 400 == 0);
+}
+
+int diasDelMes(int mes, int anio) {
+    const int diasPorMes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (mes == 2 && esBisiesto(anio)) {
+        return 29;
+    }
+    return diasPorMes[mes - 1];
+}
+
 int main() {
     // Solicitamos el numero de semana y el mes.
-    int semana, mes;
+    int semana, mes, anio;
 
     cout << "Ingrese el numero de semana: ";
     cin >> semana;
     cout << "Ingrese el numero de mes (1-12): ";
     cin >> mes;
+    cout << "Ingrese el anio: ";
+    cin >> anio;
 
-    if (semana < 1 || semana > 5 || mes < 1 || mes > 12) {
-        cout << "Semana o mes invalido." << endl;
+    if (semana < 1 || semana > 5 || mes < 1 || mes > 12 || anio < 1) {
+        cout << "Semana, mes o anio invalido." << endl;
         return 1;
     }
 
@@ -67,53 +81,43 @@ int main() {
     cout << "Ingrese el dia del mes en que comienza la semana: ";
     cin >> diaInicial;
 
-    if (diaInicial < 1 || diaInicial > 31) {
-        cout << "Dia invalido." << endl;
+    if (diaInicial < 1 || diaInicial > diasDelMes(mes, anio)) {
+        cout << "Dia invalido para ese mes y anio." << endl;
         return 1;
     }
 
+    int dia = diaInicial;
+    int mesActual = mes;
+    int anioActual = anio;
+
     for (int i = 0; i < 7; i++) {
-        int dia = diaInicial + i;
-        int mesActual = mes;
-
-        // Ajuste simple al pasar al mes siguiente.
-        if (mes == 4 || 6 || 9 || 11) {
-            if (dia > 30) {
-                dia -= 30;
-                mesActual++;
-                if (mesActual > 12) {
-                    mesActual = 1;
-                }
-            }
-        }
-        if (mes == 2) {
-            if (dia > 28) {
-                dia -= 28;
-                mesActual++;
-            }
-        }
-    }
-
         char nombreArchivo[40];
-
-        sprintf(nombreArchivo, "comandas_%02d-%02d-2026.dat", dia, mesActual);
+        snprintf(nombreArchivo, sizeof(nombreArchivo), "comandas_%02d-%02d-%04d.dat",
+                 dia, mesActual, anioActual);
 
         FILE* fDia = fopen(nombreArchivo, "rb");
 
-        if (fDia == NULL) {
-            // Si no existe el archivo, continuamos con el siguiente.
-            continue;
+        if (fDia != NULL) {
+            Comanda c;
+
+            while (cantidadComandas < 5000 && fread(&c, sizeof(Comanda), 1, fDia) == 1) {
+                comandas[cantidadComandas].dia = i;
+                comandas[cantidadComandas].comanda = c;
+                cantidadComandas++;
+            }
+
+            fclose(fDia);
         }
 
-        Comanda c;
-
-        while (cantidadComandas < 5000 && fread(&c, sizeof(Comanda), 1, fDia) == 1) {
-            comandas[cantidadComandas].dia = i;
-            comandas[cantidadComandas].comanda = c;
-            cantidadComandas++;
+        dia++;
+        if (dia > diasDelMes(mesActual, anioActual)) {
+            dia = 1;
+            mesActual++;
+            if (mesActual > 12) {
+                mesActual = 1;
+                anioActual++;
+            }
         }
-
-        fclose(fDia);
     }
 
     // Ordenamos por ID de mozo y, si coincide, por dia de la semana.
