@@ -52,7 +52,7 @@ void actualizarStock(FILE* inventario, int codProd, int cantVendida) {
         
         if (p.codigo == codProd) {
             p.stockActual -= cantVendida;  //Si encontramos el producto le restamos al stock la cantidad vendida
-            fseek(inventario, -sizeof(Producto), SEEK_CUR); //Retrocedemos el tama�o de un registro      
+            fseek(inventario, -(long)sizeof(Producto), SEEK_CUR); //Retrocedemos el tamaño de un registro      
             fwrite(&p, sizeof(Producto), 1, inventario); //Escribimos lo que acabamos de modificar
             
             encontrado = 1; //Termina el while
@@ -117,10 +117,10 @@ int main (){
             strcpy(lista[cantidadMozos].nombre, v[i].nombreMozo); 
             lista[cantidadMozos].totalComision = v[i].comision; 
             
-            // Creamos un texto temporal para guardar el ID numÃ©rico del mozo
+            // Creamos un texto temporal para guardar el ID numÃƒÂ©rico del mozo
             char passTemp[20];
             sprintf(passTemp, "%d", lista[cantidadMozos].idMozo); // Convertimos el ID entero a formato de texto para usarlo como clave inicial
-            encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contraseÃ±a inicial y la guardamos en el mozo.
+            encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contraseÃƒÂ±a inicial y la guardamos en el mozo.
 
             cantidadMozos++; 
         }
