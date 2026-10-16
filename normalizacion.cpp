@@ -117,10 +117,10 @@ int main (){
             strcpy(lista[cantidadMozos].nombre, v[i].nombreMozo); 
             lista[cantidadMozos].totalComision = v[i].comision; 
             
-            // Creamos un texto temporal para guardar el ID numÃƒÂ©rico del mozo
+            // Creamos un texto temporal para guardar el ID numerico del mozo
             char passTemp[20];
             sprintf(passTemp, "%d", lista[cantidadMozos].idMozo); // Convertimos el ID entero a formato de texto para usarlo como clave inicial
-            encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contraseÃƒÂ±a inicial y la guardamos en el mozo.
+            encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contrasenia inicial y la guardamos en el mozo.
 
             cantidadMozos++; 
         }
