@@ -52,7 +52,7 @@ void actualizarStock(FILE* inventario, int codProd, int cantVendida) {
         
         if (p.codigo == codProd) {
             p.stockActual -= cantVendida;  //Si encontramos el producto le restamos al stock la cantidad vendida
-            fseek(inventario, -sizeof(Producto), SEEK_CUR); //Retrocedemos el tamaño de un registro      
+            fseek(inventario, -(long)sizeof(Producto), SEEK_CUR); //Retrocedemos el tamaño de un registro      
             fwrite(&p, sizeof(Producto), 1, inventario); //Escribimos lo que acabamos de modificar
             
             encontrado = 1; //Termina el while
