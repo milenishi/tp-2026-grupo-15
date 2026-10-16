@@ -2,7 +2,7 @@
 #include <cstdio>
 using namespace std;
 
-// Usamos la estructura sugerida por la cátedra para leer las ventas
+// Usamos la estructura sugerida por la catedra para leer las ventas
 struct Comanda { 
     int idMozo; 
     int codigoProducto; 
