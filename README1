@@ -1,6 +1,23 @@
-       Nombre        |      Github        |    Legajo
+Integrantes del Grupo 5:
+Nombre               |      Github        |    Legajo
 Esain Thiago         | yorekst            |  233.850-6
 Manen Nayla          | nmanen             |  235.108-0
 Robiani Sol          | anasolrobi123      |  234.153-0
 Nishinakamasu Milena | milenishii         |
-Feliu Felipe         | ffeliufortuna-a11y |
+Feliu Felipe         | ffeliufortuna-a11y |  215.571-0
+
+El orden en el que hay que compilar los programas son:
+1: Normalizacion: Nos permite crear mozos.data
+2: Venta: Analiza las comisiones de los mozos por dia, ademas de crear una comandaDiaria
+3:
+4:
+
+
+Para el apartado de ventas los id de los es del 1 al 5 en el siguiente orden:
+1 — Bruno Diaz
+2 — Carla Lopez
+3 — Diego Sosa
+4 — Emma Ruiz
+5 — Sofia Ramirez
+
+Ademas las password de cada uno es equivalente a su id correspondiente.
