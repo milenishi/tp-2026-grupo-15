@@ -7,9 +7,9 @@ Nishinakamasu Milena | milenishii         |
 Feliu Felipe         | ffeliufortuna-a11y |  215.571-0
 
 El orden en el que hay que compilar los programas son:
-1: Normalizacion: Nos permite crear mozos.data
-2: Venta: Analiza las comisiones de los mozos por dia, ademas de crear una comandaDiaria
-3: Cierre: Crea Planilla semanal por mozo
+1: Normalizacion: Nos permite crear mozos.data. Encargadas: Nishinakamasu Milena y Robiani Sol
+2: Venta: Analiza las comisiones de los mozos por dia, ademas de crear una comandaDiaria. Encargados: Esain Thiago y Manen Nayla
+3: Cierre: Crea Planilla semanal por mozo. Encargado: Feliu Felipe
 4: Resumen: Muestra cuantos productos vendio cada mozo en la semana y las comisiones que recibe.
 
 
