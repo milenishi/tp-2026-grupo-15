@@ -19,12 +19,6 @@ struct Mozo {
     float totalComision;
 };
 
-// Estructura auxiliar para guardar una comanda junto con el numero del dia al que pertenece.
-struct ComandaSemana {
-    int dia;
-    Comanda comanda;
-};
-
 bool esBisiesto(int anio) {
     return anio % 4 == 0 && (anio % 100 != 0 || anio % 400 == 0);
 }
@@ -68,10 +62,6 @@ int main() {
     }
     fclose(fMozos);
 
-    //Vector para reunir las comandas de los siete dias.
-    ComandaSemana comandas[5000];
-    int cantidadComandas = 0;
-
     // Recorremos los dias de la semana.
     // El formato de los archivos diarios es dd-mm-aaaa.
     // Para construir sus nombres necesitamos el dia y el mes.
@@ -90,23 +80,31 @@ int main() {
     int mesActual = mes;
     int anioActual = anio;
 
+    FILE* archivosDia[7] = {};
+    Comanda actual[7];
+    bool hayComanda[7] = {};
+
     for (int i = 0; i < 7; i++) {
         char nombreArchivo[40];
         snprintf(nombreArchivo, sizeof(nombreArchivo), "comandas_%02d-%02d-%04d.dat",
                  dia, mesActual, anioActual);
 
-        FILE* fDia = fopen(nombreArchivo, "rb");
-
-        if (fDia != NULL) {
-            Comanda c;
-
-            while (cantidadComandas < 5000 && fread(&c, sizeof(Comanda), 1, fDia) == 1) {
-                comandas[cantidadComandas].dia = i;
-                comandas[cantidadComandas].comanda = c;
-                cantidadComandas++;
+        archivosDia[i] = fopen(nombreArchivo, "rb");
+        if (archivosDia[i] != NULL) {
+            if (fread(&actual[i], sizeof(Comanda), 1, archivosDia[i]) == 1) {
+                hayComanda[i] = true;
+            } else if (ferror(archivosDia[i])) {
+                cout << "Error al leer " << nombreArchivo << "." << endl;
+                for (int j = 0; j <= i; j++) {
+                    if (archivosDia[j] != NULL) {
+                        fclose(archivosDia[j]);
+                    }
+                }
+                return 1;
+            } else {
+                fclose(archivosDia[i]);
+                archivosDia[i] = NULL;
             }
-
-            fclose(fDia);
         }
 
         dia++;
@@ -120,39 +118,71 @@ int main() {
         }
     }
 
-    // Ordenamos por ID de mozo y, si coincide, por dia de la semana.
-    for (int i = 0; i < cantidadComandas - 1; i++) {
-        for (int j = 0; j < cantidadComandas - i - 1; j++) {
-
-            int id1 = comandas[j].comanda.idMozo;
-            int id2 = comandas[j + 1].comanda.idMozo;
-
-            if (id1 > id2 || (id1 == id2 && comandas[j].dia > comandas[j + 1].dia)) {
-                ComandaSemana aux = comandas[j];
-                comandas[j] = comandas[j + 1];
-                comandas[j + 1] = aux;
-            }
-        }
-    }
-
-    //Creamos el archivo semanal.
+    // Apareamos los siete archivos diarios ya ordenados por ID de mozo.
     char nombreSemanal[50];
-
     sprintf(nombreSemanal, "comandas_semana_s%d-%02d.dat", semana, mes);
 
     FILE* fSemana = fopen(nombreSemanal, "wb");
 
     if (fSemana == NULL) {
         cout << "No se pudo crear el archivo semanal." << endl;
+        for (int i = 0; i < 7; i++) {
+            if (archivosDia[i] != NULL) {
+                fclose(archivosDia[i]);
+            }
+        }
         return 1;
     }
 
-    // Escribimos solamente las comandas, sin el campo auxiliar dia.
-    for (int i = 0; i < cantidadComandas; i++) {
-        fwrite(&comandas[i].comanda, sizeof(Comanda), 1, fSemana);
+    int cantidadComandas = 0;
+    bool errorLectura = false;
+    bool errorEscritura = false;
+
+    while (true) {
+        int diaMenor = -1;
+
+        for (int i = 0; i < 7; i++) {
+            if (hayComanda[i] &&
+                (diaMenor == -1 || actual[i].idMozo < actual[diaMenor].idMozo)) {
+                diaMenor = i;
+            }
+        }
+
+        if (diaMenor == -1) {
+            break;
+        }
+
+        if (fwrite(&actual[diaMenor], sizeof(Comanda), 1, fSemana) != 1) {
+            errorEscritura = true;
+            break;
+        }
+        cantidadComandas++;
+
+        if (fread(&actual[diaMenor], sizeof(Comanda), 1, archivosDia[diaMenor]) == 1) {
+            hayComanda[diaMenor] = true;
+        } else if (ferror(archivosDia[diaMenor])) {
+            errorLectura = true;
+            break;
+        } else {
+            hayComanda[diaMenor] = false;
+        }
+    }
+
+    for (int i = 0; i < 7; i++) {
+        if (archivosDia[i] != NULL) {
+            fclose(archivosDia[i]);
+        }
     }
 
     fclose(fSemana);
+
+    if (errorLectura || errorEscritura) {
+        cout << (errorLectura
+                     ? "Error al leer uno de los archivos diarios."
+                     : "Error al escribir el archivo semanal.")
+             << endl;
+        return 1;
+    }
 
     cout << "Archivo semanal generado correctamente: "
          << nombreSemanal << endl;
