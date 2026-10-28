@@ -52,7 +52,7 @@ void actualizarStock(FILE* inventario, int codProd, int cantVendida) {
         
         if (p.codigo == codProd) {
             p.stockActual -= cantVendida;  //Si encontramos el producto le restamos al stock la cantidad vendida
-            fseek(inventario, -(long)sizeof(Producto), SEEK_CUR); //Retrocedemos el tamaño de un registro      
+            fseek(inventario, -(long)sizeof(Producto), SEEK_CUR); //Retrocedemos el tamaÃ±o de un registro      
             fwrite(&p, sizeof(Producto), 1, inventario); //Escribimos lo que acabamos de modificar
             
             encontrado = 1; //Termina el while
@@ -117,19 +117,28 @@ int main (){
             strcpy(lista[cantidadMozos].nombre, v[i].nombreMozo); 
             lista[cantidadMozos].totalComision = v[i].comision; 
             
-            // Creamos un texto temporal para guardar el ID numerico del mozo
-            char passTemp[20];
-             int id = lista[cantidadMozos].idMozo;
-             // Convertimos el ID a texto manualmente 
-			 if (id < 10) {
-			     passTemp[0] = id + '0';        // Si es solo un d�gito
-		        passTemp[1] = '\0';            // Fin de cadena 
-                } else {  // Si tiene dos digitos
-                         passTemp[0] = (id / 10) + '0'; // Obtenemos el primer d�gito 
-                         passTemp[1] = (id % 10) + '0'; // Obtenemos el segundo d�gito 
-                         passTemp[2] = '\0';            // Fin de cadena
-                  }
-  
+   char passTemp[20];
+            int id = lista[cantidadMozos].idMozo;
+            
+            int r = 0;
+            char rev[20];
+            
+            if (id == 0) {
+                rev[r++] = '0';
+            } else {
+                while (id > 0) {
+                    rev[r++] = (id % 10) + '0'; // Saca el dígito usando módulo
+                    id /= 10;                   // Reduce el número usando división entera
+                }
+            }
+            
+            // Invertimos los dígitos para armar correctamente la cadena de texto
+            int idx = 0;
+            for (int k = r - 1; k >= 0; k--) {
+                passTemp[idx++] = rev[k];
+            }
+            passTemp[idx] = '\0';
+			
 			       encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contrasenia inicial y la guardamos en el mozo.
 
                   cantidadMozos++; 
@@ -172,7 +181,7 @@ int main (){
             char nombreArch[30];    // Variable temporal para construir el nombre del archivo diario
            strcpy(nombreArch, "comandas_"); //  Copiamos el texto que siempre es igual al inicio
            strcat(nombreArch, fechaActual); // Le pegamos la fecha al final de lo anterior
-           strcat(nombreArch, ".dat");      // Le pegamos la extensi�n al final de todo que tambien es siempre igual        
+           strcat(nombreArch, ".dat");      // Le pegamos la extensión al final de todo que tambien es siempre igual        
 		    fDia = fopen(nombreArch, "wb");  //  Abrimos el nuevo archivo diario 
         }
 
