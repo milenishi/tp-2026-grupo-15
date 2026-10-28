@@ -119,11 +119,21 @@ int main (){
             
             // Creamos un texto temporal para guardar el ID numerico del mozo
             char passTemp[20];
-            sprintf(passTemp, "%d", lista[cantidadMozos].idMozo); // Convertimos el ID entero a formato de texto para usarlo como clave inicial
-            encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contrasenia inicial y la guardamos en el mozo.
+             int id = lista[cantidadMozos].idMozo;
+             // Convertimos el ID a texto manualmente 
+			 if (id < 10) {
+			     passTemp[0] = id + '0';        // Si es solo un dígito
+		        passTemp[1] = '\0';            // Fin de cadena 
+                } else {  // Si tiene dos digitos
+                         passTemp[0] = (id / 10) + '0'; // Obtenemos el primer dígito 
+                         passTemp[1] = (id % 10) + '0'; // Obtenemos el segundo dígito 
+                         passTemp[2] = '\0';            // Fin de cadena
+                  }
+  
+			       encriptarPassword(passTemp, lista[cantidadMozos].password); // Encriptamos esa contrasenia inicial y la guardamos en el mozo.
 
-            cantidadMozos++; 
-        }
+                  cantidadMozos++; 
+              }
     }
     
     FILE* fmozos = fopen("mozos.dat", "wb");
