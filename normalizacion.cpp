@@ -157,11 +157,13 @@ int main (){
 			{ 
 			   fclose(fDia);
 		     	}               //  Si ya habia un archivo diario abierto, lo cerramos antes de cambiar de dia
-            strcpy(fechaActual, v[i].fecha);              //  Actualizamos la fecha actual con la nueva fecha encontrada
+            strcpy(fechaActual, v[i].fecha);     //  Actualizamos la fecha actual con la nueva fecha encontrada
             
-            char nombreArch[30];                          // Variable temporal para construir el nombre del archivo diario
-            sprintf(nombreArch, "comandas_%s.dat", fechaActual); //  Armamos el nombre  con el formato comandas_dd-mm-aaaa.dat
-            fDia = fopen(nombreArch, "wb");               //  Abrimos el nuevo archivo diario 
+            char nombreArch[30];    // Variable temporal para construir el nombre del archivo diario
+           strcpy(nombreArch, "comandas_"); //  Copiamos el texto que siempre es igual al inicio
+           strcat(nombreArch, fechaActual); // Le pegamos la fecha al final de lo anterior
+           strcat(nombreArch, ".dat");      // Le pegamos la extensión al final de todo que tambien es siempre igual        
+		    fDia = fopen(nombreArch, "wb");  //  Abrimos el nuevo archivo diario 
         }
 
         //  Buscamos el ID numerico que le corresponde al nombre del mozo actual
