@@ -31,6 +31,11 @@ struct Comanda {
     float comision;         // Comision generada por esta venta.
 };
 
+struct NodoComanda {
+    Comanda comanda;
+    NodoComanda *siguiente;
+};
+
 // Aplica un corrimiento fijo a cada caracter de la contrasenia.
 void encriptarContrasenia(const char origen[], char destino[]) {
     int i = 0; // Inicializamos el índice para recorrer el texto carácter por carácter.
@@ -58,16 +63,17 @@ void cargarMozos(Mozo mozos[], int &cantidadMozos) {
     fclose(f); //cierra mozos.dat
 }
 
-// Sobrescribe mozos.dat con los datos actualizados, incluida la comision acumulada.
-bool guardarMozos(const Mozo mozos[], int cantidadMozos) {
-    FILE *f = fopen("mozos.dat", "wb"); //abre el archivo
-    if (f == NULL) { //se asegura que exista el archivo, sino termina el programa
+// Actualiza en mozos.dat unicamente el registro del mozo indicado.
+bool actualizarMozo(const Mozo &mozo, int indice) {
+    FILE *f = fopen("mozos.dat", "rb+");
+    if (f == NULL) {
         cout << "No se pudo actualizar mozos.dat." << endl;
         return false;
     }
 
-    bool guardado = fwrite(mozos, sizeof(Mozo), cantidadMozos, f) == (size_t)cantidadMozos; //actualiza mozos
-    if (fclose(f) != 0) { //cierra mozos.dat
+    bool guardado = fseek(f, (long)indice * (long)sizeof(Mozo), SEEK_SET) == 0 &&
+                    fwrite(&mozo, sizeof(Mozo), 1, f) == 1;
+    if (fclose(f) != 0) {
         guardado = false;
     }
     if (!guardado) {
@@ -93,15 +99,16 @@ void cargarInventario(Producto inventario[], int &cantidadProductos) {
     fclose(f);
 }
 
-// Sobrescribe inventario.dat con el stock actualizado.
-bool guardarInventario(const Producto inventario[], int cantidadProductos) {
-    FILE *f = fopen("inventario.dat", "wb"); //abro el archivo inventario.dat
-    if (f == NULL) { //me aseguro que exista el archivo, sino finaliza programa
+// Actualiza en inventario.dat unicamente el registro del producto indicado.
+bool actualizarProducto(const Producto &producto, int indice) {
+    FILE *f = fopen("inventario.dat", "rb+");
+    if (f == NULL) {
         cout << "No se pudo guardar el inventario." << endl;
         return false;
     }
 
-    bool guardado = fwrite(inventario, sizeof(Producto), cantidadProductos, f) == (size_t)cantidadProductos; //actualizo stock
+    bool guardado = fseek(f, (long)indice * (long)sizeof(Producto), SEEK_SET) == 0 &&
+                    fwrite(&producto, sizeof(Producto), 1, f) == 1;
     if (fclose(f) != 0) {
         guardado = false;
     }
@@ -165,26 +172,41 @@ bool esFechaValida(int dia, int mes, int anio) {
     return true; //verifica que la fecha es valida y retorna
 }
 
-// Ordena la planilla diaria en forma ascendente por ID de mozo.
-void ordenarComandasPorMozo(Comanda planilla[], int cantidad) {
-    for (int i = 0; i < cantidad - 1; i++) {
-        for (int j = 0; j < cantidad - i - 1; j++) {
-            if (planilla[j].idMozo > planilla[j + 1].idMozo) {
-                Comanda aux = planilla[j];
-                planilla[j] = planilla[j + 1];
-                planilla[j + 1] = aux;
-            }
-        }
+// Agrega una comanda a la lista, manteniendola ordenada por ID de mozo.
+bool insertarComandaOrdenada(NodoComanda *&lista, const Comanda &comanda) {
+    NodoComanda *nuevo = new NodoComanda;
+    nuevo->comanda = comanda;
+    nuevo->siguiente = NULL;
+
+    if (lista == NULL || lista->comanda.idMozo > comanda.idMozo) {
+        nuevo->siguiente = lista;
+        lista = nuevo;
+        return true;
+    }
+
+    NodoComanda *actual = lista;
+    while (actual->siguiente != NULL &&
+           actual->siguiente->comanda.idMozo <= comanda.idMozo) {
+        actual = actual->siguiente;
+    }
+
+    nuevo->siguiente = actual->siguiente;
+    actual->siguiente = nuevo;
+    return true;
+}
+
+void liberarListaComandas(NodoComanda *lista) {
+    while (lista != NULL) {
+        NodoComanda *borrar = lista;
+        lista = lista->siguiente;
+        delete borrar;
     }
 }
 
-// Lee la planilla del dia. Si aun no existe, la considera vacia para la primera venta.
-bool cargarPlanillaDiaria(const char fecha[], Comanda planilla[], int &cantidad) {
-    char nombreArchivo[40];
-    snprintf(nombreArchivo, sizeof(nombreArchivo), "comandas_%s.dat", fecha);
-
+// Lee las comandas existentes y las carga en una lista ordenada.
+bool cargarPlanillaEnLista(const char nombreArchivo[], NodoComanda *&lista) {
+    errno = 0;
     FILE *f = fopen(nombreArchivo, "rb");
-    cantidad = 0;
     if (f == NULL) {
         if (errno == ENOENT) {
             return true;
@@ -193,44 +215,68 @@ bool cargarPlanillaDiaria(const char fecha[], Comanda planilla[], int &cantidad)
         return false;
     }
 
-    Comanda aux;
-    while (cantidad < 500 && fread(&aux, sizeof(Comanda), 1, f) == 1) {
-        planilla[cantidad++] = aux;
+    Comanda comanda;
+    bool correcto = true;
+    while (fread(&comanda, sizeof(Comanda), 1, f) == 1) {
+        if (!insertarComandaOrdenada(lista, comanda)) {
+            correcto = false;
+            break;
+        }
     }
+
     if (ferror(f)) {
         cout << "Error al leer la planilla diaria." << endl;
-        fclose(f);
-        return false;
+        correcto = false;
     }
-    if (cantidad == 500 && fread(&aux, sizeof(Comanda), 1, f) == 1) {
-        cout << "La planilla diaria supera el limite de registros." << endl;
-        fclose(f);
-        return false;
+    if (fclose(f) != 0) {
+        correcto = false;
     }
-    fclose(f);
-    ordenarComandasPorMozo(planilla, cantidad);
-    return true;
+    return correcto;
 }
 
-// Guarda la planilla diaria completa; informa si no pudo escribir todos los registros.
-bool guardarPlanillaDiaria(const char fecha[], const Comanda planilla[], int cantidad) {
-    // Se abre en modo escritura porque la planilla ya contiene las ventas anteriores y la nueva.
+// Guarda la lista completa; cada comanda queda en orden por ID de mozo.
+bool guardarListaComandas(const char nombreArchivo[], const NodoComanda *lista) {
+    FILE *f = fopen(nombreArchivo, "wb");
+    if (f == NULL) {
+        cout << "No se pudo guardar la planilla diaria." << endl;
+        return false;
+    }
+
+    bool correcto = true;
+    const NodoComanda *actual = lista;
+    while (actual != NULL && correcto) {
+        if (fwrite(&actual->comanda, sizeof(Comanda), 1, f) != 1) {
+            correcto = false;
+        }
+        actual = actual->siguiente;
+    }
+
+    if (fclose(f) != 0) {
+        correcto = false;
+    }
+    if (!correcto) {
+        cout << "Error al escribir la planilla diaria." << endl;
+    }
+    return correcto;
+}
+
+// Agrega la nueva comanda a la lista del dia y guarda la planilla ordenada.
+bool guardarComandaDiaria(const char fecha[], const Comanda &comanda) {
     char nombreArchivo[40];
     snprintf(nombreArchivo, sizeof(nombreArchivo), "comandas_%s.dat", fecha);
 
-    FILE *f = fopen(nombreArchivo, "wb");
-    if (f == NULL) {
-        cout << "No se pudo guardar la planilla del dia." << endl;
+    NodoComanda *lista = NULL;
+    if (!cargarPlanillaEnLista(nombreArchivo, lista)) {
+        liberarListaComandas(lista);
+        return false;
+    }
+    if (!insertarComandaOrdenada(lista, comanda)) {
+        liberarListaComandas(lista);
         return false;
     }
 
-    bool guardado = fwrite(planilla, sizeof(Comanda), cantidad, f) == (size_t)cantidad;
-    if (fclose(f) != 0) {
-        guardado = false;
-    }
-    if (!guardado) {
-        cout << "Error al escribir la planilla del dia." << endl;
-    }
+    bool guardado = guardarListaComandas(nombreArchivo, lista);
+    liberarListaComandas(lista);
     return guardado;
 }
 
@@ -293,7 +339,8 @@ int main() {
 
                 cout << "Ingrese el ID del mozo: ";
                 cin >> idMozo;
-                if (buscarMozo(mozos, cantidadMozos, idMozo) == NULL) {
+                Mozo *mozoRegistro = buscarMozo(mozos, cantidadMozos, idMozo);
+                if (mozoRegistro == NULL) {
                     cout << "No existe un mozo con ese ID." << endl;
                     break;
                 }
@@ -342,34 +389,19 @@ int main() {
                 comandaDiaria.cantidad = cantidadVendida;
                 comandaDiaria.comision = comision;
 
-                Comanda planillaDiaria[500];
-                int cantidadEnPlanilla = 0;
-                // Se conserva la planilla existente, se agrega la venta y se guarda ordenada.
-                if (!cargarPlanillaDiaria(fecha, planillaDiaria, cantidadEnPlanilla)) {
-                    break;
-                }
-                if (cantidadEnPlanilla >= 500) {
-                    cout << "La planilla diaria alcanzo el limite de registros." << endl;
-                    break;
-                }
-                planillaDiaria[cantidadEnPlanilla++] = comandaDiaria;
-                ordenarComandasPorMozo(planillaDiaria, cantidadEnPlanilla);
-                if (!guardarPlanillaDiaria(fecha, planillaDiaria, cantidadEnPlanilla)) {
+                if (!guardarComandaDiaria(fecha, comandaDiaria)) {
                     break;
                 }
 
                 // Solo despues de guardar la comanda se actualizan stock y comision acumulada.
                 producto->stockActual -= cantidadVendida;
-                for (int i = 0; i < cantidadMozos; i++) {
-                    if (mozos[i].idMozo == mozoActual.idMozo) {
-                        mozos[i].totalComision += comision;
-                        mozoActual.totalComision = mozos[i].totalComision;
-                        break;
-                    }
-                }
+                mozoRegistro->totalComision += comision;
+                mozoActual.totalComision = mozoRegistro->totalComision;
 
-                bool inventarioGuardado = guardarInventario(inventario, cantidadProductos);
-                bool mozosGuardados = guardarMozos(mozos, cantidadMozos);
+                int indiceProducto = (int)(producto - inventario);
+                int indiceMozo = (int)(mozoRegistro - mozos);
+                bool inventarioGuardado = actualizarProducto(*producto, indiceProducto);
+                bool mozosGuardados = actualizarMozo(*mozoRegistro, indiceMozo);
                 if (!inventarioGuardado || !mozosGuardados) {
                     cout << "La comanda diaria se guardo, pero no se pudieron guardar todos los archivos auxiliares. Se finaliza la carga para evitar inconsistencias." << endl;
                     continuar = false;

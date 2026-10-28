@@ -1,5 +1,48 @@
-       Nombre        |      Github     |    Legajo
-Esain Thiago         |  yorekst        | 
-Manen Nayla          | nmanen          |
-Robiani Sol          | anasolrobi123   |
-Nishinakamasu Milena | milenishii      |
+Integrantes del Grupo 15:
+Nombre               |      Github        |    Legajo
+Esain Thiago         | yorekst            |  233.850-6
+Manen Nayla          | nmanen             |  235.108-0
+Robiani Sol          | anasolrobi123      |  234.153-0
+Nishinakamasu Milena | milenishii         |  234.068-9
+Feliu Felipe         | ffeliufortuna-a11y |  215.571-0
+
+El orden en el que hay que compilar los programas son:
+1: Normalizacion: Nos permite crear mozos.data. Encargada: Robiani Sol
+2: Venta: Analiza las comisiones de los mozos por dia, ademas de crear una comandaDiaria. Encargados: Esain Thiago y Manen Nayla
+3: Cierre: Crea Planilla semanal por mozo. Encargado: Feliu Felipe
+4: Resumen: Muestra cuantos productos vendio cada mozo en la semana y las comisiones que recibe. Encargada: Nishinakamasu Milena
+
+Cosas a saber para la ejecucion:
+Para el apartado de ventas los id de los es del 1 al 5 en el siguiente orden:
+1 — Bruno Diaz
+2 — Carla Lopez
+3 — Diego Sosa
+4 — Emma Ruiz
+5 — Sofia Ramirez
+
+Ademas las password de cada uno es equivalente a su id correspondiente.
+
+Explicacion de como se realizaron los programas:
+Normalizacion: Para resolver la normalización, primero cargamos el archivo histórico en memoria y lo ordenamos mediante el método de burbuja por fecha y, 
+en caso de ser igual, por mozo. Luego recorrimos el arreglo comparando la fecha de cada venta con una variable auxiliar fechaActual; cada vez que detectamos 
+un cambio de fecha, cerramos el archivo en uso y generamos uno nuevo para separar las planillas diarias. Durante este recorrido, a los mozos les asignamos un 
+id numérico y encriptamos su clave inicial sumando k=5 a cada carácter de su id. Finalmente, para actualizar el inventario sin tener que rehacer el archivo 
+desde cero, abrimos inventario.dat en modo rb+ y utilizamos fseek con un retroceso de -(long)sizeof(Producto) para retroceder el cursor y sobrescribir 
+directamente el stock de cada producto vendido.
+
+Venta: Para resolver el programa de venta, primero te pide una fecha y luego la valida para que sea una fecha que exista, esto nos permite no gastar memoria
+cargando archivos que luego no podremos usar. Luego cargamos los .dat de los productos y los mozos obtenidos en la normalizacion. Una vez que se extraen todos
+los datos necesarios se ingresa a un switch para poder utilizar un menu y poder cargar varios pedidos sean de diferentes mozos o el mismo sin tener que volver
+a ejecutar el mismo programa una y otra vez. Al ingresar a cargar datos te pide ingresar los datos del mozo al que se le va a modificar alguna venta que realize.
+Ademas se le va a pedir una clave y lo va a comprobar con su clave encriptada. Luego se pide ingresar que producto esta vendiendo y cuanto va a vender. una vez 
+que se allan cargado todo lo que se indica se llama a un par de funciones que se encargan de actualizar el estado del stock y de una planilla del dia con las
+ventas de cada mozo.
+
+Cierre: El programa junta las ventas de la semana calculando primero los nombres de los siete archivos diarios a partir de los datos ingresados. Luego, lee todas 
+esas comandas y las pone en un arreglo para ordenarlas mediante el método de burbuja, priorizando el id del mozo para agruparlas por empleado. Finalmente, descarta
+los datos temporales de ordenamiento y guarda los registros ya organizados en el nuevo archivo comandas_semana_sX-mm.dat
+
+Resumen: Para resolver el resumen, primero se pide al usuario que le pida que archivo semanal es el que quiere volcar para que muestre el resumen semanal. 
+una vez ingresado busca el archivo, lo abre y al entrar a un ciclo extrae todos los datos de la semana y los vuelca mostrando por mozo cuantos productos vendio 
+y cuanta comision le corresponde.
+
