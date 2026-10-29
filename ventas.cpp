@@ -1,8 +1,5 @@
 #include <iostream>
 #include <cstdio>
-#include <cstring>
-#include <cerrno>
-
 using namespace std;
 
 // Declaramos una variable global K fuera del main para usarla como corrimiento fijo en claves
@@ -44,6 +41,17 @@ void encriptarContrasenia(const char origen[], char destino[]) {
         i++; //  Avanzamos a la siguiente posición del texto.
     }
     destino[i] = '\0'; //  Colocamos el fin de cadena al final del texto ya encriptado.
+}
+
+bool cadenasIguales(const char a[], const char b[]) {
+    int i = 0;
+    while (a[i] != '\0' && b[i] != '\0') {
+        if (a[i] != b[i]) {
+            return false;
+        }
+        i++;
+    }
+    return a[i] == b[i];
 }
 
 // Carga en memoria los mozos existentes en mozos.dat.
@@ -124,7 +132,8 @@ bool loginMozo(Mozo mozos[], int cantidadMozos, int idIngresado, const char pass
     encriptarContrasenia(passIngresada, passEncriptada);
 
     for (int i = 0; i < cantidadMozos; i++) {
-        if (mozos[i].idMozo == idIngresado && strcmp(mozos[i].password, passEncriptada) == 0) {
+        if (mozos[i].idMozo == idIngresado &&
+            cadenasIguales(mozos[i].password, passEncriptada)) {
             mozoLogueado = mozos[i];
             return true;
         }
@@ -205,14 +214,9 @@ void liberarListaComandas(NodoComanda *lista) {
 
 // Lee las comandas existentes y las carga en una lista ordenada.
 bool cargarPlanillaEnLista(const char nombreArchivo[], NodoComanda *&lista) {
-    errno = 0;
     FILE *f = fopen(nombreArchivo, "rb");
     if (f == NULL) {
-        if (errno == ENOENT) {
-            return true;
-        }
-        cout << "No se pudo abrir la planilla diaria para leerla." << endl;
-        return false;
+        return true;
     }
 
     Comanda comanda;
@@ -263,7 +267,28 @@ bool guardarListaComandas(const char nombreArchivo[], const NodoComanda *lista) 
 // Agrega la nueva comanda a la lista del dia y guarda la planilla ordenada.
 bool guardarComandaDiaria(const char fecha[], const Comanda &comanda) {
     char nombreArchivo[40];
-    snprintf(nombreArchivo, sizeof(nombreArchivo), "comandas_%s.dat", fecha);
+    int i = 0;
+    const char prefijo[] = "comandas_";
+    while (prefijo[i] != '\0') {
+        nombreArchivo[i] = prefijo[i];
+        i++;
+    }
+
+    int j = 0;
+    while (fecha[j] != '\0') {
+        nombreArchivo[i] = fecha[j];
+        i++;
+        j++;
+    }
+
+    const char extension[] = ".dat";
+    j = 0;
+    while (extension[j] != '\0') {
+        nombreArchivo[i] = extension[j];
+        i++;
+        j++;
+    }
+    nombreArchivo[i] = '\0';
 
     NodoComanda *lista = NULL;
     if (!cargarPlanillaEnLista(nombreArchivo, lista)) {
@@ -282,7 +307,7 @@ bool guardarComandaDiaria(const char fecha[], const Comanda &comanda) {
 
 int main() {
     int dia, mes, anio;
-    char fecha[11]; 
+    char fecha[11];
 
 	// Se solicita una sola fecha para todas las ventas de esta tanda.
 	 cout <<"Ingrese la fecha."<<endl;
@@ -425,7 +450,7 @@ int main() {
         }
     }
 
-    cout << "\nSe cerró la carga de ventas del dia " << fecha << "." << endl;
+    cout << "\nSe cerro la carga de ventas del dia " << fecha << "." << endl;
 
     return 0;
 }
